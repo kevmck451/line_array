@@ -4,8 +4,10 @@ from scipy.signal import resample
 # Function to Down-sample Data
 def downsample(audio_object, target_sample_rate=12000):
     current_sample_rate = audio_object.sample_rate
-    if target_sample_rate >= current_sample_rate:
+    if target_sample_rate > current_sample_rate:
         raise ValueError("Target sample rate must be less than current sample rate.")
+    elif target_sample_rate == current_sample_rate:
+        return audio_object.data
 
     def downsample_data(data, current_rate, target_rate):
         num_samples = int(len(data) * target_rate / current_rate)

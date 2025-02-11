@@ -54,7 +54,7 @@ def average_spectrum(audio_object, **kwargs):
     display = kwargs.get('display', False)
     if display:
         # plt.plot(frequency_bins, average_spectrum)
-        fig, ax = plt.subplots(figsize=(8, 4))
+        fig, ax = plt.subplots(figsize=(16, 4))
         ax.set_title(f'Spectral Plot: {audio_object.name}')
         # fig.tight_layout(pad=1)
         ax.plot(frequency_bins, average_spectrum)
@@ -68,6 +68,7 @@ def average_spectrum(audio_object, **kwargs):
         ax.xaxis.set_minor_locator(ticker.LogLocator(base=10.0, subs='auto'))
         ax.xaxis.set_major_locator(ticker.LogLocator(base=10.0, numticks=12))
         ax.grid(True, which='both')
+        plt.tight_layout(pad=.1)
         if norm:
             plt.ylim(0, 1)
 
@@ -83,130 +84,13 @@ def average_spectrum(audio_object, **kwargs):
 
 # Function to calculate spectrogram of audio (Features are 2D)
 def spectrogram(audio_object, **kwargs):
-    '''
-    :param audio_object: audio object from Audio Abstract
-    :param kwargs:
-        - feature_params (dictionary with bandwidth, window_size, or hop_length)
-        - normalize (True or False) default is True
-        - display (True or False) default is False
-        - details (True or False) default is False
-    :return: numpy array either 1 channel or multi channel of spectrogram values in dB from 0 - 24,000 Hz
-            if details True then returns spec, freqs, and time arrays
-    '''
-
-
-    feature_params = kwargs.get('feature_params', 'None')
-    window_sizes = [65536, 32768, 16384, 8192, 4096, 2048, 1024, 512, 254]
-
-    if feature_params == 'None':
-        bandwidth = (0, audio_object.sample_rate//2)
-        window_size = window_sizes[4]
-        hop_length = window_size // 4
-    else:
-        if 'bandwidth' in feature_params:
-            bandwidth = feature_params.get('bandwidth')
-        else: bandwidth = (0, audio_object.sample_rate//2)
-        if 'window_size' in feature_params:
-            window_size = feature_params.get('window_size')
-        else: window_size = window_sizes[0]
-        if 'hop_length' in feature_params:
-            hop_length = feature_params.get('hop_length')
-        else: hop_length = window_size // 4
-
-    data = audio_object.data
-
-    # Initialize an empty list to store the spectrograms for each channel
-    spectrograms = []
-    frequencies = []
-    times = []
-
-    # Check if audio_object is multi-channel
-    if len(data.shape) == 1:
-        # Mono audio data, convert to a list with a single item for consistency
-        data = [data]
-    for channel_data in data:
-        # Calculate the spectrogram using Short-Time Fourier Transform (STFT)
-        frequency_list, times_list, Zxx = signal.stft(channel_data, nfft=window_size, fs=audio_object.sample_rate)
-        frequency_list = [int(np.round(f)) for f in frequency_list]
-        # print(len(frequency_list), Zxx.shape)
-        frequencies.append(frequency_list)
-        times.append(times_list)
-        # print(f'frequencies: {frequency_list}')
-        # print(f'times: {times_list}')
-        # print(f'Zxx: {Zxx}')
-        # print(f'Zxx Shape: {Zxx.shape}')
-
-        # Calculate the magnitude of the STFT (spectrogram)
-        spectrogram = np.abs(Zxx)
-        # mins = np.min(spectrogram)
-        # maxs = np.max(spectrogram)
-        # means = np.mean(spectrogram)
-        # print(f'Spec Values:\nMin: {mins}\nMax: {maxs}\nMean: {means}')
-
-        # Convert to decibels
-        # spectrogram = 20 * np.log10(spectrogram + 1e-10)
-        # minsd = np.min(spectrogram_db)
-        # maxsd = np.max(spectrogram_db)
-        # meansd = np.mean(spectrogram_db)
-        # print(f'Spec_dB Values:\nMin d: {minsd}\nMaxd: {maxsd}\nMeand: {meansd}')
-        # print(f'Spec Shape: {spectrogram_db.shape}')
-
-        # Apply Min-Max normalization to the
-        norm = kwargs.get('norm', True)
-        if norm:
-            spectrogram_min, spectrogram_max = spectrogram.min(), spectrogram.max()
-            spectrogram = (spectrogram - spectrogram_min) / (spectrogram_max - spectrogram_min)
-            # print(spectrogram_db_min)
-            # print(spectrogram_db_max)
-            # print(spectrogram_db)
-
-        # Connect freq index to freq band
-        nyquist_frequency = audio_object.sample_rate / 2
-        frequency_resolution = nyquist_frequency / (window_size / 2)
-
-        def find_closest_index(lst, target): return min(range(len(lst)), key=lambda i: abs(lst[i] - target))
-        bottom_index = find_closest_index(frequency_list, bandwidth[0])
-        top_index = find_closest_index(frequency_list, bandwidth[1])
-
-        # Cut the spectrogram to the desired frequency bandwidth and append to the
-        spectrograms.append(spectrogram[bottom_index:top_index+1])
-
-        stats = kwargs.get('stats', False)
-        if stats:
-            # print(f'Spectro_dB: {spectrogram_db}')
-            print(f'Spectro_dB Shape: {spectrogram.shape}')
-            print(f'Freq Range: ({bandwidth[0]},{bandwidth[1]}) Hz')
-            print(f'Freq Resolution: {frequency_resolution} Hz')
-            # print(f'Freq List: {freq_list}')
-
-        display = kwargs.get('display', False)
-        if display:
-            plt.imshow(spectrogram, aspect='auto', origin='lower',
-                       extent=[times_list[0], times_list[-1], frequency_list[0], frequency_list[-1]],
-                       vmin=0, vmax=1)
-            plt.colorbar()
-            plt.xlabel('Time [sec]')
-            plt.ylabel('Frequency [Hz]')
-            plt.title('Spectrogram')
-            plt.show()
-
-    spectrograms = np.array(spectrograms)
-    frequencies = np.array(frequencies)
-    times = np.array(times)
-
-    spectrograms = np.squeeze(spectrograms) # removes all singular axis
-    frequencies = np.squeeze(frequencies)  # removes all singular axis
-    times = np.squeeze(times)  # removes all singular axis
-
-    details = kwargs.get('details', False)
-    if details: return spectrograms, frequencies, times
-    else: return spectrograms
-
-# Function to calculate spectrogram of audio (Features are 2D)
-def spectrogram_2(audio_object, **kwargs):
     feature_params = kwargs.get('feature_params', None)
-    bandwidth = feature_params.get('bandwidth', (0, 24000))
-    nperseg = feature_params.get('nperseg', 32768) #32768 16384
+    if feature_params is not None:
+        bandwidth = feature_params.get('bandwidth', (0, 24000))
+        nperseg = feature_params.get('nperseg', 32768) #32768 16384
+    else:
+        bandwidth = (0, 24000)
+        nperseg = 32768  # 32768 16384
 
     # print(audio_object.data.shape)
 
@@ -243,7 +127,7 @@ def spectrogram_2(audio_object, **kwargs):
         plt.title(f'{audio_object.name}')
         plt.colorbar(label='Intensity', extend='both')
         plt.yscale('log')
-        plt.tight_layout(pad=1)
+        plt.tight_layout(pad=.1)
 
         save = kwargs.get('save', False)
         save_path = kwargs.get('save_path', '')
