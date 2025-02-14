@@ -22,7 +22,7 @@ def process_audio(audio, processes):
     # std_threshold = 0.5
     # top_cutoff_freq = 170
     # bottom_cutoff_freq = 100
-    normalize_percentage = 50
+    normalize_percentage = 100
     # new_sample_rate = 2000
 
 
@@ -32,13 +32,18 @@ def process_audio(audio, processes):
                 print('Pass Low Freq')
                 audio.data = low_pass_filter(audio, value, order=8)
 
-        if key == 'nr':
-            print('Reducing Noise')
-            audio.data = noise_reduction_filter(audio, value)
+        if key == 'hp':
+            for i in range(5):
+                print('Pass High Freq')
+                audio.data = high_pass_filter(audio, value, order=8)
 
-        print('Normalizing')
-        audio.data = normalize(audio, normalize_percentage)
 
+
+            # print('Normalizing')
+            # audio.data = normalize(audio, normalize_percentage)
+
+    # print('Reducing Noise')
+    # audio.data = noise_reduction_filter(audio, std_threshold)
     # print('Passing High Freq')
     # audio.data = high_pass_filter(audio, bottom_cutoff_freq)
 
@@ -52,7 +57,7 @@ def process_audio(audio, processes):
 
     return audio
 
-def calculate_anomalies(filename, process, processes):
+def calculate_anomalies(filename, process, processes, num_comps):
     base_path = '/Users/KevMcK/Dropbox/1 EE Degree/7996 Thesis/3 Data/Line Array/Field Test/Test 1 1-29/Test Files'
 
     # filename = 'Test1_RAW-ch1'
@@ -79,10 +84,7 @@ def calculate_anomalies(filename, process, processes):
     if process:
         audio_calibration = process_audio(audio_calibration, processes)
 
-    # audio_calibration.waveform_rms_overlay(display=True)
-    average_spectrum(audio_calibration, display=True)
-
-    pca_detector = PCA_Calculator(num_components=6)
+    pca_detector = PCA_Calculator(num_components=num_comps)
     detector = Detector()
 
     chunk_size = 1 * audio_calibration.sample_rate
@@ -133,7 +135,7 @@ def calculate_anomalies(filename, process, processes):
 
     return anomalies
 
-def create_plot(filename, plot_title, save_tag, threshold, process, processes):
+def create_plot(filename, plot_title, save_tag, threshold, process, processes, num_comps):
     SAVE_FILE = f"anomaly_files/anomalies_{save_tag}.pkl"
     RECALCULATE = True  # Change to True if you need to redo calculations
 
@@ -142,7 +144,7 @@ def create_plot(filename, plot_title, save_tag, threshold, process, processes):
             anomalies = pickle.load(f)
         print("loaded saved anomalies")
     else:
-        anomalies = calculate_anomalies(filename, process, processes)
+        anomalies = calculate_anomalies(filename, process, processes, num_comps)
         with open(SAVE_FILE, "wb") as f:
             pickle.dump(anomalies, f)
         print("calculated and saved anomalies")
@@ -198,29 +200,35 @@ def create_plot(filename, plot_title, save_tag, threshold, process, processes):
     plt.ylabel("anomalies")
     plt.tight_layout(pad=1)
 
-    # plt.show()
-    plt.savefig(f"PCA Detector {save_tag}.png", dpi=500)
+    plt.show()
+    # plt.savefig(f"PCA Detector {save_tag}.png", dpi=500)
 
 
 if __name__ == '__main__':
 
     filters = [180]
-    std = 0.5
+    num_comps_list = [6]
 
-    for filter in filters:
+    # for filter in filters:
+
+    for num_comps in num_comps_list:
 
         process = True
-        processes = {'lp': filter}
+        processes = {'lp': 2000+500, 'hp':2000-500}
 
         filenames = ['Test1_RAW-ch1', 'Test1_B12', 'Test1_BEns']
-        plot_titles = [f'Raw Ch1 - LP: {filter}_5x',
-                       f'Beamed 12 Mics - LP: {filter}_5x',
-                       f'Beam Mixture - LP: {filter}_5x']
-        save_tags = [f'RawCh1_LP{filter}_5x', f'BF12m_LP{filter}_5x', f'BMix_LP{filter}_5x']
+        plot_titles = [f'Raw Ch1 - LP-HP_5x - PCA Comps: {num_comps}',
+                       f'Beamed 12 Mics - LP: LP-HP_5x - PCA Comps: {num_comps}',
+                       f'Beam Mixture - LP: LP-HP_5x - PCA Comps: {num_comps}']
+
+        save_tags = [f'RawCh1_LP-HP_5x_PCA{num_comps}',
+                     f'BF12m_LP-HP_5x_PCA{num_comps}',
+                     f'BMix_LP-HP_5x_PCA{num_comps}']
+
         thresholds = [17.5, 18.5, 20]
 
         for filename, plot_title, save_tag, threshold in zip(filenames, plot_titles, save_tags, thresholds):
-            create_plot(filename, plot_title, save_tag, threshold, process, processes)
+            create_plot(filename, plot_title, save_tag, threshold, process, processes, num_comps)
 
 
 

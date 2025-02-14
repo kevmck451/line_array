@@ -193,14 +193,14 @@ def create_plot(filename, plot_title, save_tag, threshold, process, processes, n
     plt.ylabel("anomalies")
     plt.tight_layout(pad=1)
 
-    # plt.show()
-    plt.savefig(f"PCA Detector {save_tag}.png", dpi=500)
+    plt.show()
+    # plt.savefig(f"PCA Detector {save_tag}.png", dpi=500)
 
 
 if __name__ == '__main__':
 
-    filters = [200, 180]
-    num_comps_list = [3, 6, 9, 12]
+    filters = [180]
+    num_comps_list = [6]
 
     for filter in filters:
 

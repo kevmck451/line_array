@@ -18,8 +18,11 @@ class PCA_Calculator:
 
         for i in range(16, 8, -1):
 
+            num_seg = 2**i
+
+
             try:
-                frequencies, times, stft_matrix = stft(chunk.T, nperseg=2**i)
+                frequencies, times, stft_matrix = stft(chunk.T, nperseg=num_seg)
                 # frequencies, times, stft_matrix = stft(chunk.T, nperseg=self.nperseg)
                 feature_matrix = np.abs(stft_matrix).T
 
