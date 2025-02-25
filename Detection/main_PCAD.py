@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
     # audio_calibration = process_audio(audio_calibration)
 
-    pca_detector = PCA_Calculator(nperseg=2**12, num_components=3)
+    pca_detector = PCA_Calculator(num_components=6)
     detector = Detector()
 
     chunk_size = 1 * audio_calibration.sample_rate
@@ -80,24 +80,24 @@ if __name__ == '__main__':
         start += overlap
 
     detector.baseline_calculated = True
-    # print(detector.baseline_means)
-    # print(detector.baseline_stds)
-    # plt.plot(detector.baseline_means)
-    # plt.show()
+    print(detector.baseline_means)
+    print(detector.baseline_stds)
+    plt.plot(detector.baseline_means)
+    plt.show()
 
     # filename = 'Test1_B12'
     filename = 'Test1_B12 Pro_1'
-    filepath = f'{base_path}/{filename}.wav'
+    filepath = f'{base_path}/Test Files/{filename}.wav'
     audio = Audio(filepath=filepath, num_channels=1)
     # print(audio)
     # audio.waveform_rms_overlay(display=True)
     # average_spectrum(audio, display=True)
 
-    # pca_detector = PCA_Calculator(nperseg=32768, num_components=10)
-    # components = pca_detector.process_chunk(audio.data[(20*50000):-(600*50000)])
-    # print(components.shape)
-    # plt.plot(components)
-    # plt.show()
+    pca_detector = PCA_Calculator(num_components=6)
+    components = pca_detector.process_chunk(audio.data[(20*50000):-(600*50000)])
+    print(components.shape)
+    plt.plot(components)
+    plt.show()
 
     # audio = process_audio(audio)
 

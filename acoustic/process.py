@@ -32,32 +32,32 @@ def average_spectrum(audio_object, **kwargs):
     frequency_bins = np.fft.fftfreq(len(data), d=1 / audio_object.sample_rate)
     positive_freq_mask = (frequency_bins >= frequency_range[0]) & (frequency_bins <= frequency_range[1])
     # channel_spectrums = [magnitude[positive_freq_mask][:len(frequency_bins)]]
-    # average_spectrum = np.mean(channel_spectrums, axis=0)
+    # av_spectrum = np.mean(channel_spectrums, axis=0)
 
     selected_magnitude = magnitude[positive_freq_mask]
     frequency_bins = frequency_bins[positive_freq_mask]
-    average_spectrum = selected_magnitude
+    av_spectrum = selected_magnitude
 
     # Apply Min-Max normalization to the
     norm = kwargs.get('norm', True)
     if norm:
-        spectrogram_min, spectrogram_max = average_spectrum.min(), average_spectrum.max()
-        average_spectrum = (average_spectrum - spectrogram_min) / (spectrogram_max - spectrogram_min)
+        spectrogram_min, spectrogram_max = av_spectrum.min(), av_spectrum.max()
+        av_spectrum = (av_spectrum - spectrogram_min) / (spectrogram_max - spectrogram_min)
 
-    # average_spectrum = [0 if v <= 0.1 else v for v in average_spectrum]
+    # av_spectrum = [0 if v <= 0.1 else v for v in av_spectrum]
 
     # frequency_list = [np.round(f, 2) for f in frequency_bins]
-    # frequency_list = frequency_list[:len(average_spectrum)]
+    # frequency_list = frequency_list[:len(av_spectrum)]
     # frequency_bins = np.array(frequency_list)
     # frequency_bins = np.squeeze(frequency_bins)
 
     display = kwargs.get('display', False)
     if display:
-        # plt.plot(frequency_bins, average_spectrum)
+        # plt.plot(frequency_bins, av_spectrum)
         fig, ax = plt.subplots(figsize=(16, 4))
         ax.set_title(f'Spectral Plot: {audio_object.name}')
         # fig.tight_layout(pad=1)
-        ax.plot(frequency_bins, average_spectrum)
+        ax.plot(frequency_bins, av_spectrum)
         ax.set_xscale('symlog')
         ax.set_xlim([10, 10000])
         ax.set_xlabel('Frequency (Hz)', fontweight='bold')
@@ -80,7 +80,7 @@ def average_spectrum(audio_object, **kwargs):
         else:
             plt.show()
 
-    return average_spectrum, frequency_bins
+    return av_spectrum, frequency_bins
 
 # Function to calculate spectrogram of audio (Features are 2D)
 def spectrogram(audio_object, **kwargs):
