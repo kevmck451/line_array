@@ -114,16 +114,17 @@ def create_plot(filename, plot_title, save_tag, threshold, process, processes, r
         print("calculated and saved anomalies")
 
     targets = [
-        75, 118, 160, 203, 245, # tank
-        289, 334, 378, 421, 463, # truck
-        633, 676, 719, 761, 804,
-        846, 889, 932, 975, 1018,
-        1149, 1193, 1235, 1278, 1321,
-        1364, 1407, 1449, 1491, 1534,
-        1664, 1707, 1751, 1793, 1836,
-        1878, 1920, 1962, 2005, 2049]
+        82, 126, 170, 213, 256,  # tank
+        300, 343, 388, 432, 477,  # truck
+        653, 697, 741, 785, 828,
+        871, 915, 959, 1003, 1047,
+        1178, 1221, 1265, 1310, 1354,
+        1398, 1441, 1485, 1529, 1573,
+        1705, 1749, 1793, 1837, 1881,
+        1925, 1968, 2012, 2056, 2099
+    ]
 
-    targets_2 = [ 505, 1061, 1577, 2092]
+    targets_2 = [521, 1090, 1617, 2141]
 
     colors = ['purple', 'blue', 'green', 'teal']
 
@@ -131,8 +132,8 @@ def create_plot(filename, plot_title, save_tag, threshold, process, processes, r
     threshold = threshold
 
     plt.figure(figsize=(24, 4))
-    plt.title(f'PCA Detector: {plot_title} - Experiment 2: 30, 40, 50, 60m Altitude')
-    vehicle_labels = {0: 'Vehicles 30m', 1: 'Vehicles 40m', 2: 'Vehicles 50m', 3: 'Vehicles 60m'}
+    plt.title(f'PCA Detector: {plot_title} - Experiment 2: 70, 80, 90, 100m Altitude')
+    vehicle_labels = {0: 'Vehicles 70m', 1: 'Vehicles 80m', 2: 'Vehicles 90m', 3: 'Vehicles 100m'}
     added_labels = set()
 
     plt.plot(anomalies[flight_time[0]:flight_time[1]], label='Anomalies')
@@ -182,12 +183,12 @@ if __name__ == '__main__':
         process = True
         processes = {'lp': filter}
 
-        filenames = ['E2_T1_Full_Raw_Ch1', 'E2_T1_Full_BF12', 'E2_T1_Full_BM'] #
+        filenames = ['E2_T2_Full_Raw_Ch1', 'E2_T2_Full_BF12', 'E2_T2_Full_BM'] #
         plot_titles = [f'Raw Ch1 - LP: {filter}_5x',
                        f'Beamed 12 Mics - LP: {filter}_5x',
                        f'Beam Mixture - LP: {filter}_5x']
         save_tags = [f'RawCh1_LP{filter}_5x', f'BF12m_LP{filter}_5x', f'BMix_LP{filter}_5x']
-        thresholds = [28, 27, 17]
+        thresholds = [19, 18, 17]
 
         for filename, plot_title, save_tag, threshold in zip(filenames, plot_titles, save_tags, thresholds):
             create_plot(filename, plot_title, save_tag, threshold, process, processes, recalculate)
